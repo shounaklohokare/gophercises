@@ -33,7 +33,7 @@ func main() {
 
 	problems := parseLines(lines)
 
-	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second) // returns the channel when time is up
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second) // returns a channel when time is up
 
 	correct := 0
 	for i, p := range problems {
@@ -54,7 +54,7 @@ func main() {
 			fmt.Printf("You ran out of time. You scored %d out of %d\n", correct, len(problems))
 			return
 
-		case answer := <-answerCh: // checks if value is scannedi in the closure
+		case answer := <-answerCh: // checks if value is scanned in the closure
 
 			if answer != p.a {
 				fmt.Println("Incorrect!")
@@ -67,7 +67,7 @@ func main() {
 
 	}
 
-	fmt.Printf("Your score :- %d\n", correct)
+	fmt.Printf("You scored %d out of %d\n", correct, len(problems))
 
 }
 
