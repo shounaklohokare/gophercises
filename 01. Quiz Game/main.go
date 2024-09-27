@@ -4,7 +4,9 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -31,7 +33,7 @@ func main() {
 		exit(fmt.Sprintf("Failed to parse the provided CSV file."))
 	}
 
-	problems := parseLines(lines)
+	problems := parseLines(shuffleLines(lines))
 
 	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second) // returns a channel when time is up
 
@@ -78,7 +80,7 @@ func parseLines(lines [][]string) []problem {
 	for i, line := range lines {
 		ret[i] = problem{
 			q: line[0],
-			a: line[1],
+			a: strings.TrimSpace(line[1]),
 		}
 	}
 
@@ -89,4 +91,17 @@ func parseLines(lines [][]string) []problem {
 func exit(msg string) {
 	fmt.Println(msg)
 	os.Exit(1)
+}
+
+func shuffleLines(lines [][]string) [][]string { // shuffles lines to give a random order of questions each time
+
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+
+	ret := make([][]string, len(lines))
+	for i, randIndex := range r.Perm(len(lines)) {
+		ret[i] = lines[randIndex]
+	}
+
+	return ret
+
 }
