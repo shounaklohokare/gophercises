@@ -23,34 +23,25 @@ type Chapter struct {
 
 type Story map[string]Chapter
 
-var story Story
-
 func main() {
 
-	fileName := flag.String("filename", "gopher.json", "path to the JSON file containing the story")
+	filename := flag.String("filename", "gopher.json", "path to the JSON file containing the story")
 	flag.Parse()
 
-	f, err := os.Open(*fileName)
-	if err != nil {
-		panic(err)
-	}
+	var story Story
 
-	decoder := json.NewDecoder(f)
+	parseFile(filename, &story)
 
-	err = decoder.Decode(&story) // if decoding is successful it returns nil else it returns an error
-	if err != nil {
-		panic(err)
-	}
-
-	http.HandleFunc("/", handler)
-	http.HandleFunc("/{arc}", handleArc)
+	http.HandleFunc("/", story.handler)
+	http.HandleFunc("/{arc}", story.handleArc)
 
 	log.Fatal(http.ListenAndServe(":8000", nil))
 
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+func (story Story) handler(w http.ResponseWriter, r *http.Request) {
+
+	tmpl := template.Must(template.ParseFiles("static/index.html"))
 
 	msg := story["intro"]
 
@@ -58,7 +49,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func handleArc(w http.ResponseWriter, r *http.Request) {
+func (story Story) handleArc(w http.ResponseWriter, r *http.Request) {
 
 	arc := path.Base(r.URL.Path)
 	println("Arc -> ", arc)
@@ -71,5 +62,20 @@ func handleArc(w http.ResponseWriter, r *http.Request) {
 
 	tmpl := template.Must(template.ParseFiles("static/index.html"))
 	tmpl.Execute(w, msg)
+
+}
+
+func parseFile(filename *string, story *Story) error {
+
+	f, err := os.Open(*filename)
+	if err != nil {
+		return err
+	}
+
+	if err := json.NewDecoder(f).Decode(&story); err != nil {
+		return err
+	}
+
+	return nil
 
 }
