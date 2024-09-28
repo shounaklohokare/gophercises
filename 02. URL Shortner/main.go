@@ -13,7 +13,7 @@ import (
 func main() {
 
 	yamlFileName := flag.String("yaml", "urls.yaml", "Path to YAML file containing urls")
-	// jsonFileName := flag.String("json", "urls.json", "Path to JSON file containing urls")
+	jsonFileName := flag.String("json", "urls.json", "Path to JSON file containing urls")
 	// parse above file names
 	flag.Parse()
 
@@ -42,14 +42,34 @@ func main() {
 		return
 	}
 
-	yamlHandler, err := urlshort.YAMLHandler([]byte(yamlData), mapHandler)
+	yamlHandler, err := urlshort.YAMLHandler(yamlData, mapHandler)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	jsonFile, err := os.Open(*jsonFileName)
+	if err != nil {
+		fmt.Printf("Failed to load file %v due to %v", *jsonFileName, err)
+		return
+	}
+
+	jsonData, err := io.ReadAll(jsonFile)
+	if err != nil {
+		fmt.Printf("Failed to load file %v due to %v", *jsonFileName, err)
+		return
+	}
+
+	jsonHandler, err := urlshort.JSONHandler(jsonData, mapHandler)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	http.ListenAndServe(":9090", jsonHandler)
 	http.ListenAndServe(":8080", mapHandler)
 	http.ListenAndServe(":7832", yamlHandler)
+
 }
 
 func defaultMux() *http.ServeMux {

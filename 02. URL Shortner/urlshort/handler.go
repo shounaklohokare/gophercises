@@ -1,6 +1,7 @@
 package urlshort
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -64,8 +65,6 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%v\n", parsedYaml)
-
 	pathsToUrls := map[string]string{}
 	for _, ymlEntry := range parsedYaml {
 		pathsToUrls[ymlEntry.Path] = ymlEntry.URL
@@ -73,4 +72,20 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 
 	return MapHandler(pathsToUrls, fallback), nil
 
+}
+
+func JSONHandler(jsonData []byte, fallback http.Handler) (http.HandlerFunc, error) {
+
+	var parsedJson = []pathUrl{}
+	err := json.Unmarshal(jsonData, &parsedJson)
+	if err != nil {
+		return nil, err
+	}
+
+	pathsToUrls := map[string]string{}
+	for _, jsonEntry := range parsedJson {
+		pathsToUrls[jsonEntry.Path] = jsonEntry.URL
+	}
+
+	return MapHandler(pathsToUrls, fallback), nil
 }
