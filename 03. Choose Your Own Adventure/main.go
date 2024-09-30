@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 )
 
@@ -53,18 +54,17 @@ func useCLI(story Story) {
 
 		arc := story[nextArc]
 
-		fmt.Println(arc.Title + "\n")
-		fmt.Println(arc.Paragraphs[0] + "\n")
+		fmt.Printf("\n%v\n\n", arc.Title)
+		fmt.Println(strings.Join(arc.Paragraphs, " "))
 
 		if len(arc.Options) == 0 {
 			break
 		}
 
-		fmt.Printf("Please choose one of the following options to proceed:- ")
 		for i, option := range arc.Options {
 			fmt.Printf("\n%v. %v", (i + 1), option.Text)
 		}
-
+		fmt.Printf("\nPlease choose one of the above options to proceed:- ")
 		fmt.Scanln(&op)
 
 		nextArc = arc.Options[op-1].Chapter
@@ -73,6 +73,8 @@ func useCLI(story Story) {
 }
 
 func useWebserver(story Story) {
+	fmt.Println("Application is running on Port 8000...")
+
 	http.HandleFunc("/", story.handler)
 	http.HandleFunc("/{arc}", story.handleArc)
 
