@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -23,26 +22,11 @@ func main() {
 	f, err := os.Open(*htmlFileName)
 	if err != nil {
 		fmt.Printf("Failed to open the %v file :- %v", *htmlFileName, err)
-		return
 	}
 
 	defer f.Close()
 
-	urls, err := GetUrls(f)
-	if err != nil {
-		fmt.Printf("Error occured :- %v", err)
-		return
-	}
-
-	for _, url := range urls {
-		fmt.Printf("%+v", url)
-	}
-
-}
-
-func GetUrls(r io.Reader) ([]link, error) {
-
-	root, err := html.Parse(r)
+	root, err := html.Parse(f)
 	if err != nil {
 		fmt.Printf("Failed to parse the HTML file:- %s", err)
 	}
@@ -50,16 +34,12 @@ func GetUrls(r io.Reader) ([]link, error) {
 	aChan := make(chan *html.Node)
 	go findAnchors(root, aChan)
 
-	var links []link
-
 	for a := range aChan {
-		links = append(links, link{
+		fmt.Printf("%+v\n", link{
 			Text: getText(a),
 			Href: getHref(a),
 		})
 	}
-
-	return links, nil
 
 }
 
